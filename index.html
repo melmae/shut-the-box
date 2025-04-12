@@ -1,0 +1,204 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <link href="index.css" rel="stylesheet">
+    <title>Shut the Box</title>
+</head>
+<body>
+
+<script src="dice.js"></script>
+<script>
+    let scores = [0, 0, 0, 0];
+    let turn = 1;
+    let turnNumbers = {
+        1: false,
+        2: false,
+        3: false,
+        4: false,
+        5: false,
+        6: false,
+        7: false,
+        8: false,
+        9: false,
+        remaining: 45
+    };
+    let rollSelection = [];
+    let rollTotal = 0;
+
+    window.onload = function() {
+        document.getElementById("submit").style.display = "none";
+        document.getElementById("next").style.display = "none";
+
+        createScoreList();
+    }
+
+    function next() {
+        // Add remaining numbers to the active player's score
+        scores[turn - 1] += turnNumbers.remaining;
+
+        // Reset selections
+        [...document.querySelectorAll(".numbers")].forEach(element => {
+            if (element.classList.contains("disabled"))
+                element.classList.remove("disabled");
+
+            if (element.classList.contains("selected"))
+                element.classList.remove("selected");
+        });
+        turnNumbers = {
+            1: false,
+            2: false,
+            3: false,
+            4: false,
+            5: false,
+            6: false,
+            7: false,
+            8: false,
+            9: false,
+            remaining: 45
+        };
+
+        // Go to the next player
+        if (turn === 4)
+            turn = 1;
+        else
+            turn++;
+
+        // Update score displays
+        createScoreList();
+
+        // Update actions
+        document.getElementById("message").innerHTML = "";
+        document.getElementById("rolled-dice").innerHTML = "";
+        document.getElementById("submit").style.display = "none";
+        document.getElementById("roll").removeAttribute("style");
+        document.getElementById("next").style.display = "none";
+    }
+
+    function createScoreList() {
+        let players = document.getElementById("players");
+        players.innerHTML = "";
+
+        for (let i = 1; i <= 4; i++) {
+            // Container
+            let player = document.createElement("div");
+            player.setAttribute("id", "player-" + i);
+            player.setAttribute("class", "score");
+            // Player "name"
+            let player_name = turn === i ? document.createElement("h3") : document.createElement("h4");
+            if (turn === i) player_name.style.color = "var(--wine)";
+            player_name.innerHTML = "Player " + i;
+            player.appendChild(player_name);
+            // Score
+            let score = document.createElement("p");
+            score.innerHTML = scores[i-1];
+            player.appendChild(score);
+            // Add to list
+            players.appendChild(player);
+        }
+    }
+
+    function select(number) {
+        if (rollTotal === 0) return;
+        if (document.getElementById(`die-${number}`).classList.contains("disabled")) return;
+
+        if (rollSelection.includes(number)) {
+            rollSelection.splice(rollSelection.indexOf(number), 1);
+            document.getElementById(`die-${number}`).classList.remove("selected");
+        } else {
+            rollSelection.push(number);
+            document.getElementById(`die-${number}`).classList.add("selected");
+        }
+    }
+
+    function submitNumbers() {
+        // Check if the totals match
+        let selectedTotal = rollSelection.reduce((a, b) => a + b, 0);
+        if (selectedTotal !== rollTotal) {
+            document.getElementById("message").innerHTML = "Totals do not match.";
+            return;
+        } else {
+            document.getElementById("message").innerHTML = "";
+        }
+
+        // Submit selections
+        rollSelection.forEach(number => {
+            turnNumbers[number] = true;
+            turnNumbers.remaining -= number;
+            document.getElementById(`die-${number}`).classList.remove("selected");
+            document.getElementById(`die-${number}`).classList.add("disabled");
+        })
+        rollSelection = [];
+        rollTotal = 0;
+
+        // Set up actions
+        if (turnNumbers.remaining === 0) {
+            document.getElementById("message").innerHTML = "No numbers left! Good job!";
+            document.getElementById("rolled-dice").innerHTML = "";
+            document.getElementById("submit").style.display = "none";
+            document.getElementById("roll").style.display = "none";
+            document.getElementById("next").removeAttribute("style");
+        } else {
+            document.getElementById("rolled-dice").innerHTML = "";
+            document.getElementById("submit").style.display = "none";
+            document.getElementById("roll").removeAttribute("style");
+            document.getElementById("next").style.display = "none";
+        }
+    }
+
+    function roll() {
+        // Randomly get 2 numbers
+        let die1Num = Math.floor(Math.random() * 6 + 1);
+        let die2Num = Math.floor(Math.random() * 6 + 1);
+        rollTotal = die1Num + die2Num;
+
+        // Paint the appropriate dice
+        document.getElementById("rolled-dice").innerHTML = '';
+        const diceSize = "80";
+
+        let canvas1 = document.createElement("canvas");
+        canvas1.setAttribute("height", diceSize);
+        canvas1.setAttribute("width", diceSize);
+        renderRandomDie(die1Num, canvas1);
+        document.getElementById("rolled-dice").appendChild(canvas1);
+
+        let canvas2 = document.createElement("canvas");
+        canvas2.setAttribute("height", diceSize);
+        canvas2.setAttribute("width", diceSize);
+        renderRandomDie(die2Num, canvas2);
+        document.getElementById("rolled-dice").appendChild(canvas2);
+
+        // Check if it's possible to create the sum with the available numbers?
+
+        // Set up the possible actions
+        document.getElementById("submit").removeAttribute("style");
+        document.getElementById("roll").style.display = "none";
+        document.getElementById("next").removeAttribute("style");
+    }
+</script>
+
+<h2>Shut the Box</h2>
+<div id="root">
+    <div id="options">
+        <div id="die-1" class="numbers" onclick="select(1)">1</div>
+        <div id="die-2" class="numbers" onclick="select(2)">2</div>
+        <div id="die-3" class="numbers" onclick="select(3)">3</div>
+        <div id="die-4" class="numbers" onclick="select(4)">4</div>
+        <div id="die-5" class="numbers" onclick="select(5)">5</div>
+        <div id="die-6" class="numbers" onclick="select(6)">6</div>
+        <div id="die-7" class="numbers" onclick="select(7)">7</div>
+        <div id="die-8" class="numbers" onclick="select(8)">8</div>
+        <div id="die-9" class="numbers" onclick="select(9)">9</div>
+    </div>
+    <div id="players"></div>
+    <div id="actions">
+        <p id="message"></p>
+        <div id="rolled-dice"></div>
+        <button id="roll" onclick="roll()">Roll</button>
+        <button id="submit" onclick="submitNumbers()">Submit</button>
+        <button id="next" onclick="next()">End Turn</button>
+    </div>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,113 @@
+:root {
+    --black: #080705;
+    --white: #FFFFFA;
+    --grey: #40434E;
+    --wine: #912F40;
+}
+
+body {
+    background-color: var(--white);
+    font-family: Tahoma, Geneva, Verdana, sans-serif;
+    place-items: center;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+h2 {
+    text-align: center;
+}
+
+button {
+    height: 40px;
+    width: 80px;
+    text-transform: uppercase;
+    font-weight: 600;
+    background-color: var(--wine);
+    color: var(--white);
+    border: none;
+    border-radius: 6px;
+}
+
+canvas {
+    border: 1px solid black;
+    border-radius: 5px;
+    margin: 8px;
+}
+
+#root {
+    margin: 24px;
+    display: grid;
+    gap: 16px;
+    grid-template-areas:
+        "options options"
+        "players actions";
+}
+
+#options {
+    justify-self: center;
+    grid-area: options;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    text-align: center;
+}
+
+#options div {
+    margin: 8px;
+    font-size: 32px;
+    line-height: 64px;
+}
+
+#options div.selected {
+    border: 2px solid var(--wine);
+    color: var(--wine);
+    margin: 7px;
+}
+
+#options div.disabled {
+    background-color: lightgray;
+}
+
+#players {
+    grid-area: players;
+    display: flex;
+    flex-direction: column;
+    justify-self: center;
+    align-self: center;
+}
+
+#actions {
+    grid-area: actions;
+    height: 300px;
+    width: 200px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    justify-self: center;
+    align-self: center;
+    align-items: center;
+    justify-content: center;
+}
+
+#rolled-dice {
+    height: 100px;
+    margin-bottom: 16px;
+}
+
+.numbers {
+    height: 64px;
+    width: 64px;
+    border: 1px solid var(--grey);
+    border-radius: 12px;
+}
+
+.score p {
+    height: 32px;
+    width: 64px;
+    border: 1px solid var(--grey);
+    border-radius: 6px;
+    text-align: center;
+    line-height: 32px;
+}
