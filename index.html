@@ -26,9 +26,11 @@
     let rollSelection = [];
     let rollTotal = 0;
 
-    window.onload = function() {
+    window.onload = function () {
         document.getElementById("submit").style.display = "none";
         document.getElementById("next").style.display = "none";
+
+        document.getElementById("instructions").innerHTML = "Roll to begin";
 
         createScoreList();
     }
@@ -67,6 +69,9 @@
         // Update score displays
         createScoreList();
 
+        // Update turn messages
+        document.getElementById("instructions").innerHTML = "Roll to begin";
+
         // Update actions
         document.getElementById("message").innerHTML = "";
         document.getElementById("rolled-dice").innerHTML = "";
@@ -91,7 +96,7 @@
             player.appendChild(player_name);
             // Score
             let score = document.createElement("p");
-            score.innerHTML = scores[i-1];
+            score.innerHTML = scores[i - 1];
             player.appendChild(score);
             // Add to list
             players.appendChild(player);
@@ -109,6 +114,9 @@
             rollSelection.push(number);
             document.getElementById(`die-${number}`).classList.add("selected");
         }
+
+        let selectedTotal = rollSelection.reduce((a, b) => a + b, 0);
+        document.getElementById("instructions").innerHTML = `Rolled: <span class="roll-number">${rollTotal}</span>  Selected: <span class="roll-number">${selectedTotal}</span>`
     }
 
     function submitNumbers() {
@@ -130,6 +138,8 @@
         })
         rollSelection = [];
         rollTotal = 0;
+
+        document.getElementById("instructions").innerHTML = "Roll again";
 
         // Set up actions
         if (turnNumbers.remaining === 0) {
@@ -169,16 +179,54 @@
         document.getElementById("rolled-dice").appendChild(canvas2);
 
         // Check if it's possible to create the sum with the available numbers?
+        if (getValidCombinations(rollTotal).length === 0) {
+            document.getElementById("instructions").innerHTML = "No possible combinations"
 
-        // Set up the possible actions
-        document.getElementById("submit").removeAttribute("style");
-        document.getElementById("roll").style.display = "none";
-        document.getElementById("next").removeAttribute("style");
+            // Set up the possible actions
+            document.getElementById("submit").style.display = "none";
+            document.getElementById("roll").style.display = "none";
+            document.getElementById("next").removeAttribute("style");
+        } else {
+            document.getElementById("instructions").innerHTML = `Rolled: <span class="roll-number">${rollTotal}</span> Selected: <span class="roll-number">0</span>`;
+
+            // Set up the possible actions
+            document.getElementById("submit").removeAttribute("style");
+            document.getElementById("roll").style.display = "none";
+            document.getElementById("next").removeAttribute("style");
+        }
+    }
+
+    function getValidCombinations(target) {
+        const openTiles = Array.from({length: 9}, (_, i) => {
+            if (!turnNumbers[i + 1])
+                return i + 1;
+        }).filter(t => t !== undefined)
+
+        const results = []
+
+        function backtrack(start, remaining, current) {
+            if (remaining === 0) {
+                results.push([...current])
+                return
+            }
+            if (remaining < 0) return
+
+            for (let i = start; i < openTiles.length; i++) {
+                current.push(openTiles[i])
+                backtrack(i + 1, remaining - openTiles[i], current)
+                current.pop()
+            }
+        }
+
+        backtrack(0, target, [])
+        return results
     }
 </script>
 
 <h2>Shut the Box</h2>
+
 <div id="root">
+    <div id="players"></div>
     <div id="options">
         <div id="die-1" class="numbers" onclick="select(1)">1</div>
         <div id="die-2" class="numbers" onclick="select(2)">2</div>
@@ -190,10 +238,10 @@
         <div id="die-8" class="numbers" onclick="select(8)">8</div>
         <div id="die-9" class="numbers" onclick="select(9)">9</div>
     </div>
-    <div id="players"></div>
     <div id="actions">
         <p id="message"></p>
         <div id="rolled-dice"></div>
+        <p id="instructions"></p>
         <button id="roll" onclick="roll()">Roll</button>
         <button id="submit" onclick="submitNumbers()">Submit</button>
         <button id="next" onclick="next()">End Turn</button>
